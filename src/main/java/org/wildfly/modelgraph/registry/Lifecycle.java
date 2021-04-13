@@ -3,6 +3,7 @@ package org.wildfly.modelgraph.registry;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 import org.wildfly.modelgraph.model.Version;
@@ -20,6 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Lifecycle {
 
     private static final Logger LOGGER = Logger.getLogger(Lifecycle.class);
+
+    @Inject
+    @ConfigProperty(name = "quarkus.http.port")
+    Integer port;
 
     @Inject
     @RestClient
@@ -48,11 +53,11 @@ public class Lifecycle {
     private void register() {
         versionRepository.version().subscribe().with(version -> {
             try {
-                String url = "http://" + InetAddress.getLocalHost().getHostName();
-                Registration registration = new Registration(version.toString(), url);
-                registryClient.register(registration).subscribe().with(response -> {
+                String url = "http://" + InetAddress.getLocalHost().getHostName() + ":" + port;
+                ModelService modelService = new ModelService(version.toString(), url);
+                registryClient.register(modelService).subscribe().with(response -> {
                     if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-                        LOGGER.infof("Registered %s", registration);
+                        LOGGER.infof("Registered %s", modelService);
                         registered.set(true);
                     } else {
                         Response.StatusType statusInfo = response.getStatusInfo();

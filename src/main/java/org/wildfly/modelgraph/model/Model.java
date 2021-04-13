@@ -2,7 +2,6 @@ package org.wildfly.modelgraph.model;
 
 import org.neo4j.driver.types.Node;
 
-import javax.json.bind.annotation.JsonbTransient;
 import java.util.Objects;
 
 public abstract class Model {

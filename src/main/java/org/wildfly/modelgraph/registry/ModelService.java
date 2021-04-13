@@ -1,14 +1,14 @@
 package org.wildfly.modelgraph.registry;
 
-public class Registration {
+public class ModelService {
 
     public String version;
     public String url;
 
-    public Registration() {
+    public ModelService() {
     }
 
-    public Registration(String version, String url) {
+    public ModelService(String version, String url) {
         this.version = version;
         this.url = url;
     }

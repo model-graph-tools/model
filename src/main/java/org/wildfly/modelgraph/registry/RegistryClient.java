@@ -7,14 +7,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/versions")
 @RegisterRestClient
+@Path("/registry/model")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface RegistryClient {
 
     @POST
-    Uni<Response> register(Registration registration);
+    Uni<Response> register(ModelService modelService);
 
     @DELETE
     @Path("/{version}")
