@@ -14,9 +14,9 @@ import javax.ws.rs.core.Response;
 public interface RegistryClient {
 
     @POST
-    Uni<Response> register(ModelService modelService);
+    Uni<Response> register(Registration registration);
 
     @DELETE
     @Path("/{version}")
-    Uni<Response> unregister(@PathParam("version") String version);
+    Response unregister(@PathParam("version") String version);
 }
