@@ -93,16 +93,16 @@ public class ManagementModelResource {
     }
 
     @GET
-    @Path("/version")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Version> version() {
-        return versionRepository.version();
-    }
-
-    @GET
     @Path("/versions")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<Version> versions() {
         return versionRepository.versions();
+    }
+
+    @GET
+    @Path("/version")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Uni<Version> version() {
+        return versionRepository.version();
     }
 }

@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApplicationScoped
 public class Lifecycle {
 
-    private static final Logger LOGGER = Logger.getLogger(Lifecycle.class);
+    private static final Logger log = Logger.getLogger(Lifecycle.class);
 
     @Inject
     @ConfigProperty(name = "quarkus.http.host")
@@ -29,7 +29,7 @@ public class Lifecycle {
     Integer port;
 
     @Inject
-    @ConfigProperty(name = "mgt.neo4j.browser")
+    @ConfigProperty(name = "mgt.neo4j.browser.uri")
     String neo4jBrowser;
 
     @Inject
@@ -53,39 +53,48 @@ public class Lifecycle {
     }
 
     private void register() {
+        log.debug("register()");
         versionRepository.version().subscribe().with(version -> {
+            log.debugf("Got version %s from version repository", version);
             String service = "http://" + host + ":" + port;
             Registration registration = new Registration(version.toString(), service, neo4jBrowser);
+            log.debugf("Try to register %s %s %s",
+                    version, service, neo4jBrowser);
             registryClient.register(registration).subscribe().with(response -> {
+                log.debugf("Registration service returned %d", response.getStatus());
                 if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
-                    LOGGER.infof("Registered %s", registration.version);
                     registered.set(true);
+                    log.infof("Registered %s", registration.version);
                 } else {
                     Response.StatusType statusInfo = response.getStatusInfo();
-                    LOGGER.errorf("Unable to register %s: %d %s",
+                    log.errorf("Unable to register %s: %d %s",
                             version, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
                 }
-            }, e -> LOGGER.errorf("Unable to register %s: %s", version, e.getMessage()));
-        }, e -> LOGGER.errorf("Unable to register: Cannot read version: %s", e.getMessage()));
+            }, e -> log.errorf("Unable to register %s: %s", version, e.getMessage()));
+        }, e -> log.errorf("Unable to register: Cannot read version: %s", e.getMessage()));
     }
 
     private void unregister() {
+        log.debug("unregister()");
         try {
             Version version = versionRepository.version()
-                    .onFailure().invoke(e -> LOGGER.errorf(
+                    .onFailure().invoke(e -> log.errorf(
                             "Unable to unregister: Cannot read version: %s", e.getMessage()))
                     .await().atMost(Duration.ofSeconds(2));
+            log.debugf("Got version %s from version repository", version);
+            log.debugf("Try to unregister version %s", version);
             Response response = registryClient.unregister(version.toString());
+            log.debugf("Registration service returned %d", response.getStatus());
             Response.StatusType statusInfo = response.getStatusInfo();
             if (statusInfo.getStatusCode() == Response.Status.NO_CONTENT.getStatusCode()) {
-                LOGGER.infof("Unregistered %s", version);
                 registered.set(false);
+                log.infof("Unregistered %s", version);
             } else {
-                LOGGER.errorf("Unable to unregister %s: %d %s",
+                log.errorf("Unable to unregister %s: %d %s",
                         version, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
             }
         } catch (Exception e) {
-            LOGGER.errorf("Unable to unregister: %s", e.getMessage());
+            log.errorf("Unable to unregister: %s", e.getMessage());
         }
     }
 }
