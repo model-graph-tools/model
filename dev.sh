@@ -30,5 +30,6 @@ fi
   -Dquarkus.neo4j.uri=bolt://localhost:76$VERSION \
   -Dquarkus.log.category.\"org.wildfly.modelgraph\".level=DEBUG \
   -Dmgt.api.uri=http://localhost:9911 \
+  -Dmgt.model.uri=http://localhost:80$VERSION \
   -Dmgt.neo4j.browser.uri=http://localhost:74$VERSION/browser \
   quarkus:dev

@@ -21,12 +21,8 @@ public class Lifecycle {
     private static final Logger log = Logger.getLogger(Lifecycle.class);
 
     @Inject
-    @ConfigProperty(name = "quarkus.http.host")
-    String host;
-
-    @Inject
-    @ConfigProperty(name = "quarkus.http.port")
-    Integer port;
+    @ConfigProperty(name = "mgt.model.uri")
+    String modelUri;
 
     @Inject
     @ConfigProperty(name = "mgt.neo4j.browser.uri")
@@ -56,10 +52,8 @@ public class Lifecycle {
         log.debug("register()");
         versionRepository.version().subscribe().with(version -> {
             log.debugf("Got version %s from version repository", version);
-            String service = "http://" + host + ":" + port;
-            Registration registration = new Registration(version.toString(), service, neo4jBrowser);
-            log.debugf("Try to register %s %s %s",
-                    version, service, neo4jBrowser);
+            Registration registration = new Registration(version.toString(), modelUri, neo4jBrowser);
+            log.debugf("Try to register %s %s %s", version, modelUri, neo4jBrowser);
             registryClient.register(registration).subscribe().with(response -> {
                 log.debugf("Registration service returned %d", response.getStatus());
                 if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
