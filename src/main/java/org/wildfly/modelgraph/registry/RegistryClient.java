@@ -17,6 +17,6 @@ public interface RegistryClient {
     Uni<Response> register(Registration registration);
 
     @DELETE
-    @Path("/{version}")
-    Response unregister(@PathParam("version") String version);
+    @Path("/{identifier}")
+    Response unregister(@PathParam("identifier") String identifier);
 }

@@ -5,8 +5,8 @@ import io.quarkus.scheduler.Scheduled;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
-import org.wildfly.modelgraph.model.Version;
-import org.wildfly.modelgraph.model.VersionRepository;
+import org.wildfly.modelgraph.model.Identity;
+import org.wildfly.modelgraph.model.IdentityRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -21,19 +21,19 @@ public class Lifecycle {
     private static final Logger log = Logger.getLogger(Lifecycle.class);
 
     @Inject
-    @ConfigProperty(name = "mgt.model.uri")
-    String modelUri;
+    @ConfigProperty(name = "mgt.model.service.uri")
+    String modelServiceUri;
 
     @Inject
     @ConfigProperty(name = "mgt.neo4j.browser.uri")
-    String neo4jBrowser;
+    String neo4jBrowserUri;
 
     @Inject
     @RestClient
     RegistryClient registryClient;
 
     @Inject
-    VersionRepository versionRepository;
+    IdentityRepository identityRepository;
 
     private final AtomicBoolean registered = new AtomicBoolean(false);
 
@@ -50,42 +50,42 @@ public class Lifecycle {
 
     private void register() {
         log.debug("register()");
-        versionRepository.version().subscribe().with(version -> {
-            log.debugf("Got version %s from version repository", version);
-            Registration registration = new Registration(version.toString(), modelUri, neo4jBrowser);
-            log.debugf("Try to register %s %s %s", version, modelUri, neo4jBrowser);
+        identityRepository.identity().subscribe().with(identity -> {
+            log.debugf("Got %s from identity repository", identity);
+            Registration registration = new Registration(identity, modelServiceUri, neo4jBrowserUri);
+            log.debugf("Try to register %s", registration);
             registryClient.register(registration).subscribe().with(response -> {
                 log.debugf("Registration service returned %d", response.getStatus());
                 if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
                     registered.set(true);
-                    log.infof("Registered %s", registration.version);
+                    log.infof("Registered %s", registration);
                 } else {
                     Response.StatusType statusInfo = response.getStatusInfo();
                     log.errorf("Unable to register %s: %d %s",
-                            version, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
+                            identity, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
                 }
-            }, e -> log.errorf("Unable to register %s: %s", version, e.getMessage()));
-        }, e -> log.errorf("Unable to register: Cannot read version: %s", e.getMessage()));
+            }, e -> log.errorf("Unable to register %s: %s", identity, e.getMessage()));
+        }, e -> log.errorf("Unable to register: Cannot read identity: %s", e.getMessage()));
     }
 
     private void unregister() {
         log.debug("unregister()");
         try {
-            Version version = versionRepository.version()
+            Identity identity = identityRepository.identity()
                     .onFailure().invoke(e -> log.errorf(
-                            "Unable to unregister: Cannot read version: %s", e.getMessage()))
+                            "Unable to unregister: Cannot read identity: %s", e.getMessage()))
                     .await().atMost(Duration.ofSeconds(2));
-            log.debugf("Got version %s from version repository", version);
-            log.debugf("Try to unregister version %s", version);
-            Response response = registryClient.unregister(version.toString());
+            log.debugf("Got %s from identity repository", identity);
+            log.debugf("Try to unregister %s", identity);
+            Response response = registryClient.unregister(identity.toString());
             log.debugf("Registration service returned %d", response.getStatus());
             Response.StatusType statusInfo = response.getStatusInfo();
             if (statusInfo.getStatusCode() == Response.Status.NO_CONTENT.getStatusCode()) {
                 registered.set(false);
-                log.infof("Unregistered %s", version);
+                log.infof("Unregistered %s", identity);
             } else {
                 log.errorf("Unable to unregister %s: %d %s",
-                        version, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
+                        identity, statusInfo.getStatusCode(), statusInfo.getReasonPhrase());
             }
         } catch (Exception e) {
             log.errorf("Unable to unregister: %s", e.getMessage());

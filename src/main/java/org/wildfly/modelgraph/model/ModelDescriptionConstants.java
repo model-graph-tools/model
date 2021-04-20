@@ -46,13 +46,15 @@ public interface ModelDescriptionConstants {
     String CHILD_DESCRIPTIONS = "child-descriptions";
 
     String DEFAULT = "default";
-    String DEPRECATED = "deprecated";
     String DESCRIPTION = "description";
 
     String EXPRESSIONS_ALLOWED = "expressions-allowed";
 
     String GLOBAL = "global";
 
+    String IDENTIFIER = "identifier";
+
+    String MANAGEMENT_VERSION = "management-version";
     String MAX = "max";
     String MAX_LENGTH = "max-length";
     String MAJOR = "major";
@@ -64,6 +66,8 @@ public interface ModelDescriptionConstants {
     String NILLABLE = "nillable";
 
     String PATCH = "patch";
+    String PRODUCT_NAME = "product-name";
+    String PRODUCT_VERSION = "product-version";
 
     String READ_ONLY = "read-only";
     String REASON = "reason";

@@ -1,6 +1,5 @@
 package org.wildfly.modelgraph.model;
 
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;
@@ -24,9 +23,6 @@ public class ManagementModelResource {
 
     @Inject
     AttributeRepository attributeRepository;
-
-    @Inject
-    VersionRepository versionRepository;
 
     @GET
     @Path("/query")
@@ -90,19 +86,5 @@ public class ManagementModelResource {
                             models.attributes = attributes;
                             return Uni.createFrom().item(models);
                         }));
-    }
-
-    @GET
-    @Path("/versions")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Multi<Version> versions() {
-        return versionRepository.versions();
-    }
-
-    @GET
-    @Path("/version")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Version> version() {
-        return versionRepository.version();
     }
 }
