@@ -53,7 +53,7 @@ public class Lifecycle {
         identityRepository.identity().subscribe().with(identity -> {
             log.debugf("Got %s from identity repository", identity);
             Registration registration = new Registration(identity, modelServiceUri, neo4jBrowserUri);
-            log.debugf("Try to register %s", registration);
+            log.debugf("Register %s", registration);
             registryClient.register(registration).subscribe().with(response -> {
                 log.debugf("Registration service returned %d", response.getStatus());
                 if (response.getStatus() == Response.Status.CREATED.getStatusCode()) {
