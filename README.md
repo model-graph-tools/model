@@ -1,5 +1,7 @@
 # Model
 
-Service to read and inspect the management model of a WildFly instance.
+Microservice exposing a REST API to query the WildFly management model. The model service is bound to one graph database containing one specific version of the management model.
 
-![Model Graph Tools](https://model-graph-tools.github.io/img/tools.png "Model Graph Tools")
+## Get Started
+
+Please take a look at the [setup](https://github.com/model-graph-tools/setup) repository how to get started.
