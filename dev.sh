@@ -32,4 +32,5 @@ fi
   -Dmgt.api.service.uri=http://localhost:9911 \
   -Dmgt.model.service.uri=http://localhost:80$VERSION \
   -Dmgt.neo4j.browser.uri=http://localhost:74$VERSION/browser \
+  -Dmgt.neo4j.bolt.uri=bolt://localhost:76$VERSION \
   quarkus:dev

@@ -29,6 +29,10 @@ public class Lifecycle {
     String neo4jBrowserUri;
 
     @Inject
+    @ConfigProperty(name = "mgt.neo4j.bolt.uri")
+    String neo4jBoltUri;
+
+    @Inject
     @RestClient
     RegistryClient registryClient;
 
@@ -52,7 +56,7 @@ public class Lifecycle {
         log.debug("register()");
         identityRepository.identity().subscribe().with(identity -> {
             log.debugf("Got %s from identity repository", identity);
-            Registration registration = new Registration(identity, modelServiceUri, neo4jBrowserUri);
+            Registration registration = new Registration(identity, modelServiceUri, neo4jBrowserUri, neo4jBoltUri);
             log.debugf("Register %s", registration);
             registryClient.register(registration).subscribe().with(response -> {
                 log.debugf("Registration service returned %d", response.getStatus());
