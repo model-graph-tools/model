@@ -29,4 +29,6 @@ docker run \
   --detach \
   --name=mgt-neo4j-$VERSION \
   --publish=74$VERSION:7474 --publish=76$VERSION:7687 \
+  --env NEO4J_browser_post__connect__cmd="play http://localhost:3000/model-graph-guide.html" \
+  --env NEO4J_browser_remote__content__hostname__whitelist="*" \
   modelgraphtools/neo4j:$RELEASE
