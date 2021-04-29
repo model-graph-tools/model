@@ -3,10 +3,7 @@ package org.wildfly.modelgraph.model;
 import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/management-model")
@@ -62,7 +59,7 @@ public class ManagementModelResource {
     @GET
     @Path("/deprecated")
     @Produces(MediaType.APPLICATION_JSON)
-    public Uni<Models> deprecated(@QueryParam("since") String since) {
+    public Uni<Models> deprecated(@QueryParam("since") @DefaultValue("") String since) {
         Version version = Version.from(since);
         return Uni.createFrom().item(new Models())
                 .onItem()

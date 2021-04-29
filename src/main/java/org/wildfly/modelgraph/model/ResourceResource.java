@@ -92,7 +92,7 @@ public class ResourceResource {
     @GET
     @Path("/deprecated")
     @Produces(MediaType.APPLICATION_JSON)
-    public Multi<Resource> deprecated(@QueryParam("since") String since) {
+    public Multi<Resource> deprecated(@QueryParam("since") @DefaultValue("") String since) {
         return repository.deprecated(Version.from(since));
     }
 

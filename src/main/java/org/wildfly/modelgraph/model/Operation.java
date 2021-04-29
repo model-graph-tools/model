@@ -20,6 +20,7 @@ public class Operation extends NamedModel {
         operation.runtimeOnly = node.get(RUNTIME_ONLY).isNull() ? null : node.get(RUNTIME_ONLY).asBoolean();
         operation.description = node.get(DESCRIPTION).asString(null);
         operation.returnValue = node.get(RETURN_VALUE).asString(null);
+        operation.valueType = node.get(VALUE_TYPE).asString(null);
 
         return operation;
     }
@@ -30,6 +31,7 @@ public class Operation extends NamedModel {
     public Boolean runtimeOnly;
     public String description;
     public String returnValue;
+    public String valueType;
     public Deprecation deprecation;
 
     // relations
