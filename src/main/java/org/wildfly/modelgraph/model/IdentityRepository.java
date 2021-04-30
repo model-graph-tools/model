@@ -17,10 +17,10 @@ public class IdentityRepository {
     @Inject
     Driver driver;
 
-    public Uni<Identity> identity() {
+    public Uni<Identity> identity(boolean anemic) {
         Query query = new Query(IDENTITY);
         return Uni.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
-                .map(record -> Identity.from(record.get("i").asNode()));
+                .map(record -> Identity.from(record.get("i").asNode(), anemic));
     }
 }

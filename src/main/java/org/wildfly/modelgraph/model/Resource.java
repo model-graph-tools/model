@@ -11,30 +11,33 @@ import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 @SuppressWarnings("WeakerAccess")
 public class Resource extends NamedModel {
 
-    public static Resource from(Node node) {
+    public static Resource from(Node node, boolean anemic) {
         Resource resource = new Resource();
-        mapId(node, resource);
+        if (!anemic) {
+            mapId(node, resource);
+        }
         mapName(node, resource);
 
         resource.singleton = node.get(SINGLETON).isNull() ? null : node.get(SINGLETON).asBoolean();
         resource.address = node.get(ADDRESS).asString();
         resource.description = node.get(DESCRIPTION).asString(null);
-        String cd = node.get(CHILD_DESCRIPTIONS).asString(null);
-        if (cd != null) {
-            String[] segments = cd.split("\\^");
-            if (segments.length != 0) {
-                for (String segment : segments) {
-                    String[] keyValue = segment.split("\\|");
-                    if (keyValue.length == 2) {
-                        if (resource.childDescriptions == null) {
-                            resource.childDescriptions = new HashMap<>();
+        if (!anemic) {
+            String cd = node.get(CHILD_DESCRIPTIONS).asString(null);
+            if (cd != null) {
+                String[] segments = cd.split("\\^");
+                if (segments.length != 0) {
+                    for (String segment : segments) {
+                        String[] keyValue = segment.split("\\|");
+                        if (keyValue.length == 2) {
+                            if (resource.childDescriptions == null) {
+                                resource.childDescriptions = new HashMap<>();
+                            }
+                            resource.childDescriptions.put(keyValue[0], keyValue[1]);
                         }
-                        resource.childDescriptions.put(keyValue[0], keyValue[1]);
                     }
                 }
             }
         }
-
         return resource;
     }
 

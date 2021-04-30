@@ -1,15 +1,17 @@
 package org.wildfly.modelgraph.model;
 
+import org.neo4j.driver.types.Node;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import org.neo4j.driver.types.Node;
-
 public class Capability extends NamedModel {
 
-    public static Capability from(Node node) {
+    public static Capability from(Node node, boolean anemic) {
         Capability capability = new Capability();
-        mapId(node, capability);
+        if (!anemic) {
+            mapId(node, capability);
+        }
         mapName(node, capability);
 
         return capability;

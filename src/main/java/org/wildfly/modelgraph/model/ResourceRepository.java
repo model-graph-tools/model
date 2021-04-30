@@ -93,7 +93,7 @@ class ResourceRepository {
     /**
      * Returns flat resources (w/o attributes or operations) which match the given name (case-insensitive).
      */
-    Multi<Resource> resources(String name) {
+    Multi<Resource> resources(String name, boolean anemic) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -101,8 +101,8 @@ class ResourceRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Resource resource = Resource.from(record.get("r").asNode());
-                                resource.deprecation = mapDeprecation(record);
+                                Resource resource = Resource.from(record.get("r").asNode(), anemic);
+                                resource.deprecation = mapDeprecation(record, anemic);
                                 return resource;
                             });
                 }))
@@ -114,7 +114,7 @@ class ResourceRepository {
     /**
      * Returns the resource with all parents for the given address.
      */
-    Uni<Resource> resource(String address, String skip) {
+    Uni<Resource> resource(String address, String skip, boolean anemic) {
         Query query = new Query(PARENTS, parameters("address", address));
         return Uni.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
@@ -126,7 +126,7 @@ class ResourceRepository {
                         Value value = record.get(0);
                         if (!value.isEmpty()) {
                             List<Resource> resources = value.asList(Value::asNode).stream()
-                                    .map(Resource::from)
+                                    .map((Node node) -> Resource.from(node, anemic))
                                     .collect(toList());
                             if (!resources.isEmpty()) {
                                 Iterator<Resource> iterator = resources.iterator();
@@ -136,7 +136,7 @@ class ResourceRepository {
                                     iterator.next().parent = parentIterator.next();
                                 }
                                 resource = resources.get(0);
-                                resource.deprecation = mapDeprecation(record);
+                                resource.deprecation = mapDeprecation(record, anemic);
                             } else {
                                 throwNotFound(address);
                             }
@@ -154,15 +154,15 @@ class ResourceRepository {
     /**
      * Returns the root resource down to the resource with the given address as list
      */
-    Uni<List<Resource>> subtree(String address) {
+    Uni<List<Resource>> subtree(String address, boolean anemic) {
         Query query = new Query(PARENTS_REVERSE, parameters("address", address));
         return Uni.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
                 .ifNoItem().after(TIMEOUT).failWith(timeout())
                 .map(record -> record.get(0).asList(Value::asNode).stream()
                         .map(node -> {
-                            Resource resource = Resource.from(node);
-                            resource.deprecation = mapDeprecation(record);
+                            Resource resource = Resource.from(node, anemic);
+                            resource.deprecation = mapDeprecation(record, anemic);
                             return resource;
                         })
                         .collect(toList()));
@@ -171,7 +171,7 @@ class ResourceRepository {
     /**
      * Reads the child resources for the given address.
      */
-    Multi<Resource> children(String address) {
+    Multi<Resource> children(String address, boolean anemic) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -179,8 +179,8 @@ class ResourceRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Resource resource = Resource.from(record.get("child").asNode());
-                                resource.deprecation = mapDeprecation(record);
+                                Resource resource = Resource.from(record.get("child").asNode(), anemic);
+                                resource.deprecation = mapDeprecation(record, anemic);
                                 return resource;
                             });
                 }))
@@ -192,7 +192,7 @@ class ResourceRepository {
     /**
      * Returns deprecated resources (w/o attributes or operations).
      */
-    Multi<Resource> deprecated(Version version) {
+    Multi<Resource> deprecated(Version version, boolean anemic) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -200,8 +200,8 @@ class ResourceRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Resource resource = Resource.from(record.get("r").asNode());
-                                resource.deprecation = mapDeprecation(record);
+                                Resource resource = Resource.from(record.get("r").asNode(), anemic);
+                                resource.deprecation = mapDeprecation(record, anemic);
                                 return resource;
                             });
                 }))
@@ -215,7 +215,7 @@ class ResourceRepository {
     /**
      * Reads and adds the child resources to the given resource.
      */
-    Uni<Resource> assignChildren(Resource resource) {
+    Uni<Resource> assignChildren(Resource resource, boolean anemic) {
         Query query = new Query(CHILDREN, parameters("address", resource.address));
         return Multi.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
@@ -223,8 +223,8 @@ class ResourceRepository {
                 .map(records -> {
                     List<Resource> children = records.stream()
                             .map(record -> {
-                                Resource child = Resource.from(record.get("child").asNode());
-                                child.deprecation = mapDeprecation(record);
+                                Resource child = Resource.from(record.get("child").asNode(), anemic);
+                                child.deprecation = mapDeprecation(record, anemic);
                                 return child;
                             })
                             .collect(toList());
@@ -240,7 +240,7 @@ class ResourceRepository {
     /**
      * Reads and assigns the attributes to the given resource.
      */
-    Uni<Resource> assignAttributes(Resource resource) {
+    Uni<Resource> assignAttributes(Resource resource, boolean anemic) {
         Query query = new Query(ATTRIBUTES, parameters("address", resource.address));
         return Multi.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
@@ -254,8 +254,8 @@ class ResourceRepository {
                         // collect all attributes
                         for (Node node : path.nodes()) {
                             if (node.hasLabel("Attribute")) {
-                                Attribute attribute = Attribute.from(node);
-                                attribute.deprecation = mapDeprecation(record);
+                                Attribute attribute = Attribute.from(node, anemic);
+                                attribute.deprecation = mapDeprecation(record, anemic);
                                 attributes.put(node.id(), attribute);
                             }
                         }
@@ -302,7 +302,7 @@ class ResourceRepository {
     /**
      * Reads and assigns the operations and parameters to the given resource.
      */
-    Uni<Resource> assignOperations(Resource resource, boolean skipGlobalOperations) {
+    Uni<Resource> assignOperations(Resource resource, boolean skipGlobalOperations, boolean anemic) {
         Query query = new Query(skipGlobalOperations ? NONE_GLOBAL_OPERATIONS : OPERATIONS,
                 parameters("address", resource.address));
         return Multi.createFrom()
@@ -317,8 +317,8 @@ class ResourceRepository {
                         // collect all parameters
                         for (Node node : path.nodes()) {
                             if (node.hasLabel("Parameter")) {
-                                Parameter parameter = Parameter.from(node);
-                                parameter.deprecation = mapDeprecation(record);
+                                Parameter parameter = Parameter.from(node, anemic);
+                                parameter.deprecation = mapDeprecation(record, anemic);
                                 parameters.put(node.id(), parameter);
                             }
                         }
@@ -329,8 +329,8 @@ class ResourceRepository {
                         Operation operation = operations.get(node.id());
 
                         if (operation == null) {
-                            operation = Operation.from(node);
-                            operation.deprecation = mapDeprecation(record);
+                            operation = Operation.from(node, anemic);
+                            operation.deprecation = mapDeprecation(record, anemic);
                             operations.put(node.id(), operation);
                         }
                         if (iterator.hasNext()) {
@@ -376,14 +376,14 @@ class ResourceRepository {
     /**
      * Reads and assigns the capabilities to the given resource.
      */
-    Uni<Resource> assignCapabilities(Resource resource) {
+    Uni<Resource> assignCapabilities(Resource resource, boolean anemic) {
         Query query = new Query(CAPABILITIES, parameters("address", resource.address));
         return Multi.createFrom()
                 .publisher(driver.rxSession().readTransaction(tx -> tx.run(query).records()))
                 .collect().asList()
                 .map(records -> {
                     resource.capabilities = records.stream()
-                            .map(record -> Capability.from(record.get("c").asNode()))
+                            .map(record -> Capability.from(record.get("c").asNode(), anemic))
                             .sorted(Comparator.comparing(c -> c.name))
                             .collect(toList());
                     return resource;

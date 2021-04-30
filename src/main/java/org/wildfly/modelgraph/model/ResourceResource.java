@@ -5,6 +5,8 @@ import io.smallrye.mutiny.Uni;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.time.Duration;
 import java.util.Collections;
@@ -24,7 +26,7 @@ public class ResourceResource {
     @Path("/query")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<Resource> query(@QueryParam("name") String name) {
-        return repository.resources(name);
+        return repository.resources(name, false);
     }
 
     @GET
@@ -32,27 +34,40 @@ public class ResourceResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Resource> resource(
             @QueryParam("address") String address,
-            @QueryParam("skip") @DefaultValue("") String skip) {
-        return repository.resource(address, skip)
+            @QueryParam("skip") @DefaultValue("") String skip,
+            @Context HttpHeaders headers) {
+        boolean anmc = false;
+        List<String> header = headers.getRequestHeader("mgt-anemic");
+        if (!header.isEmpty()) {
+            anmc = Boolean.parseBoolean(header.get(0));
+        }
+        final boolean anemic = anmc;
+
+        return repository.resource(address, skip, anemic)
                 .onItem().transformToUni(resource ->
-                        skip(skip, "a") ? Uni.createFrom().item(resource) : repository.assignAttributes(resource))
+                        skip(skip, "a")
+                                ? Uni.createFrom().item(resource)
+                                : repository.assignAttributes(resource, anemic))
                 .onItem().transformToUni(resource ->
-                        skip(skip, "o") ? Uni.createFrom().item(resource) : repository.assignOperations(resource,
-                                skip(skip, "g")))
+                        skip(skip, "o")
+                                ? Uni.createFrom().item(resource)
+                                : repository.assignOperations(resource, skip(skip, "g"), anemic))
                 .onItem().transformToUni(resource ->
-                        skip(skip, "c") ? Uni.createFrom().item(resource) : repository.assignCapabilities(resource));
+                        skip(skip, "c") ?
+                                Uni.createFrom().item(resource)
+                                : repository.assignCapabilities(resource, anemic));
     }
 
     @GET
     @Path("/subtree")
     @Produces(MediaType.APPLICATION_JSON)
     public Uni<Resource> subtree(@QueryParam("address") String address) {
-        return repository.subtree(address)
+        return repository.subtree(address, false)
                 .ifNoItem().after(Duration.ofSeconds(2))
                 .recoverWithItem(Collections.emptyList())
                 .onItem().transformToUni(resources -> {
                     List<Uni<Resource>> childrenUnis = resources.stream()
-                            .map(resource -> repository.assignChildren(resource))
+                            .map(resource -> repository.assignChildren(resource, false))
                             .collect(toList());
                     return Uni.combine().all().unis(childrenUnis).combinedWith(result -> {
                         Resource resource = null;
@@ -86,14 +101,14 @@ public class ResourceResource {
     @Path("/children")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<Resource> children(@QueryParam("address") String address) {
-        return repository.children(address);
+        return repository.children(address, false);
     }
 
     @GET
     @Path("/deprecated")
     @Produces(MediaType.APPLICATION_JSON)
     public Multi<Resource> deprecated(@QueryParam("since") @DefaultValue("") String since) {
-        return repository.deprecated(Version.from(since));
+        return repository.deprecated(Version.from(since), false);
     }
 
     static boolean skip(String skip, String what) {

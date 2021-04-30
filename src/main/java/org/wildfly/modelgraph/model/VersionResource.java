@@ -5,8 +5,11 @@ import io.smallrye.mutiny.Multi;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 @Path("/versions")
+@Produces(MediaType.APPLICATION_JSON)
 public class VersionResource {
 
     @Inject
@@ -14,6 +17,6 @@ public class VersionResource {
 
     @GET
     public Multi<Version> versions() {
-        return repository.versions();
+        return repository.versions(false);
     }
 }

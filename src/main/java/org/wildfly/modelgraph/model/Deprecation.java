@@ -7,11 +7,11 @@ import static org.wildfly.modelgraph.model.ModelDescriptionConstants.REASON;
 
 public class Deprecation {
 
-    public static Deprecation from(Relationship relationship, Node node) {
+    public static Deprecation from(Relationship relationship, Node node, boolean anemic) {
         Deprecation deprecation = new Deprecation();
 
         deprecation.reason = relationship.get(REASON).asString();
-        deprecation.since = Version.from(node);
+        deprecation.since = Version.from(node, anemic);
 
         return deprecation;
     }

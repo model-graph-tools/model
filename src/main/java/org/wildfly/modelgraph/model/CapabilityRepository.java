@@ -27,7 +27,7 @@ class CapabilityRepository {
     /**
      * Returns capabilities which match the given name (case-insensitive).
      */
-    Multi<Capability> capabilities(String name) {
+    Multi<Capability> capabilities(String name, boolean anemic) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -35,7 +35,7 @@ class CapabilityRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Capability capability = Capability.from(record.get("c").asNode());
+                                Capability capability = Capability.from(record.get("c").asNode(), anemic);
                                 String resource = record.get("r").asNode().get(ADDRESS).asString();
                                 return new CapabilityAndResource(capability, resource);
                             })

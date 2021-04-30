@@ -7,22 +7,22 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/attributes")
+@Produces(MediaType.APPLICATION_JSON)
 public class AttributeResource {
 
-    @Inject AttributeRepository repository;
+    @Inject
+    AttributeRepository repository;
 
     @GET
     @Path("/query")
-    @Produces(MediaType.APPLICATION_JSON)
     public Multi<Attribute> query(@QueryParam("name") String name) {
-        return repository.attributes(name);
+        return repository.attributes(name, false);
     }
 
 
     @GET
     @Path("/deprecated")
-    @Produces(MediaType.APPLICATION_JSON)
     public Multi<Attribute> deprecated(@QueryParam("since") @DefaultValue("") String since) {
-        return repository.deprecated(Version.from(since));
+        return repository.deprecated(Version.from(since), false);
     }
 }

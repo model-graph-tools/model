@@ -7,21 +7,20 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/operations")
+@Produces(MediaType.APPLICATION_JSON)
 public class OperationResource {
 
     @Inject OperationRepository repository;
 
     @GET
     @Path("/query")
-    @Produces(MediaType.APPLICATION_JSON)
     public Multi<Operation> query(@QueryParam("name") String name) {
-        return repository.operations(name);
+        return repository.operations(name, false);
     }
 
     @GET
     @Path("/deprecated")
-    @Produces(MediaType.APPLICATION_JSON)
     public Multi<Operation> deprecated(@QueryParam("since") @DefaultValue("") String since) {
-        return repository.deprecated(Version.from(since));
+        return repository.deprecated(Version.from(since), false);
     }
 }
