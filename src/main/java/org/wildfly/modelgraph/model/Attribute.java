@@ -1,7 +1,6 @@
 package org.wildfly.modelgraph.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.neo4j.driver.types.Node;
 
@@ -34,16 +33,29 @@ public class Attribute extends Parameter {
     public String storage;
 
     // relations
-    public Set<Attribute> attributes;
+    public List<Attribute> attributes;
     public String definedIn;
 
     public Attribute() {
         // Required by JSON-B
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Attribute attribute = (Attribute) o;
+        return name.equals(attribute.name) && definedIn.equals(attribute.definedIn);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, definedIn);
+    }
+
     void addAttribute(Attribute attribute) {
         if (attributes == null) {
-            attributes = new HashSet<>();
+            attributes = new ArrayList<>();
         }
         attributes.add(attribute);
     }

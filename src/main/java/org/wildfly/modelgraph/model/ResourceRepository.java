@@ -126,7 +126,7 @@ class ResourceRepository {
                         Value value = record.get(0);
                         if (!value.isEmpty()) {
                             List<Resource> resources = value.asList(Value::asNode).stream()
-                                    .map((Node node) -> Resource.from(node))
+                                    .map(Resource::from)
                                     .collect(toList());
                             if (!resources.isEmpty()) {
                                 Iterator<Resource> iterator = resources.iterator();

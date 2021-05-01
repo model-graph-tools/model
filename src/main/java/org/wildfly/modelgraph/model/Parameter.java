@@ -1,7 +1,6 @@
 package org.wildfly.modelgraph.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.neo4j.driver.types.Node;
 
@@ -50,7 +49,7 @@ public class Parameter extends NamedModel {
     public Deprecation deprecation;
 
     // relations
-    public Set<Parameter> parameters;
+    public List<Parameter> parameters;
     public Set<String> alternatives;
     public Set<String> requires;
     public String capability;
@@ -59,9 +58,22 @@ public class Parameter extends NamedModel {
         // Required by JSON-B
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Parameter parameter = (Parameter) o;
+        return name.equals(parameter.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
     void addParameter(Parameter parameter) {
         if (parameters == null) {
-            parameters = new HashSet<>();
+            parameters = new ArrayList<>();
         }
         parameters.add(parameter);
     }

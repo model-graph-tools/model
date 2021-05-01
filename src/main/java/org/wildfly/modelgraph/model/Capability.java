@@ -3,6 +3,7 @@ package org.wildfly.modelgraph.model;
 import org.neo4j.driver.types.Node;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Capability extends NamedModel {
@@ -20,6 +21,19 @@ public class Capability extends NamedModel {
 
     public Capability() {
         // Required by JSON-B
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Capability that = (Capability) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 
     public void addDeclaredBy(String resource) {

@@ -1,7 +1,6 @@
 package org.wildfly.modelgraph.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import org.neo4j.driver.types.Node;
 
@@ -35,16 +34,29 @@ public class Operation extends NamedModel {
     public Deprecation deprecation;
 
     // relations
-    public Set<Parameter> parameters;
+    public List<Parameter> parameters;
     public String providedBy;
 
     public Operation() {
         // Required by JSON-B
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Operation operation = (Operation) o;
+        return name.equals(operation.name) && providedBy.equals(operation.providedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, providedBy);
+    }
+
     void addParameter(Parameter parameter) {
         if (parameters == null) {
-            parameters = new HashSet<>();
+            parameters = new ArrayList<>();
         }
         parameters.add(parameter);
     }

@@ -2,6 +2,7 @@ package org.wildfly.modelgraph.model;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -13,11 +14,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static org.wildfly.modelgraph.model.Failure.throwNotFound;
 
 @Path("/resources")
 public class ResourceResource {
+
+    private static final Logger log = Logger.getLogger(ResourceResource.class);
 
     @Inject
     ResourceRepository repository;
@@ -36,26 +40,31 @@ public class ResourceResource {
             @QueryParam("address") String address,
             @QueryParam("skip") @DefaultValue("") String skip,
             @Context HttpHeaders headers) {
-        boolean diff = false;
+        boolean d = false;
         List<String> header = headers.getRequestHeader("mgt-diff");
         if (!header.isEmpty()) {
-            diff = Boolean.parseBoolean(header.get(0));
+            d = Boolean.parseBoolean(header.get(0));
         }
+        final boolean diff = d;
 
         // TODO Switch serializer if diff == true
         return repository.resource(address, skip)
-                .onItem().transformToUni(resource ->
-                        skip(skip, "a")
-                                ? Uni.createFrom().item(resource)
-                                : repository.assignAttributes(resource))
-                .onItem().transformToUni(resource ->
-                        skip(skip, "o")
-                                ? Uni.createFrom().item(resource)
-                                : repository.assignOperations(resource, skip(skip, "g")))
-                .onItem().transformToUni(resource ->
-                        skip(skip, "c") ?
-                                Uni.createFrom().item(resource)
-                                : repository.assignCapabilities(resource));
+                .flatMap(resource -> skip(skip, "a")
+                        ? Uni.createFrom().item(resource)
+                        : repository.assignAttributes(resource))
+                .flatMap(resource -> skip(skip, "o")
+                        ? Uni.createFrom().item(resource)
+                        : repository.assignOperations(resource, skip(skip, "g")))
+                .flatMap(resource -> skip(skip, "c") ?
+                        Uni.createFrom().item(resource)
+                        : repository.assignCapabilities(resource))
+                .map(resource -> {
+                    if (diff) {
+                        log.debugf("Make resource %s comparable", resource.address);
+                        makeComparable(resource);
+                    }
+                    return resource;
+                });
     }
 
     @GET
@@ -65,7 +74,7 @@ public class ResourceResource {
         return repository.subtree(address)
                 .ifNoItem().after(Duration.ofSeconds(2))
                 .recoverWithItem(Collections.emptyList())
-                .onItem().transformToUni(resources -> {
+                .flatMap(resources -> {
                     List<Uni<Resource>> childrenUnis = resources.stream()
                             .map(resource -> repository.assignChildren(resource))
                             .collect(toList());
@@ -113,5 +122,92 @@ public class ResourceResource {
 
     static boolean skip(String skip, String what) {
         return skip != null && skip.contains(what);
+    }
+
+    private void makeComparable(Resource resource) {
+        if (resource != null) {
+            // properties
+            stripId(resource);
+            stripDeprecation(resource.deprecation);
+            resource.childDescriptions = null;
+
+            // relations
+            makeComparable(resource.parent);
+            if (resource.children != null) {
+                resource.children.sort(comparing(r -> r.address));
+                for (Resource child : resource.children) {
+                    makeComparable(child);
+                }
+            }
+            if (resource.operations != null) {
+                resource.operations.sort(comparing(o -> o.name));
+                for (Operation operation : resource.operations) {
+                    makeComparable(operation);
+                }
+            }
+            if (resource.attributes != null) {
+                resource.attributes.sort(comparing(a -> a.name));
+                for (Attribute attribute : resource.attributes) {
+                    makeComparable(attribute);
+                }
+            }
+            if (resource.capabilities != null) {
+                resource.capabilities.sort(comparing(c -> c.name));
+                for (Capability capability : resource.capabilities) {
+                    stripId(capability);
+                }
+            }
+        }
+    }
+
+    private void makeComparable(Operation operation) {
+        if (operation != null) {
+            stripId(operation);
+            stripDeprecation(operation.deprecation);
+            if (operation.parameters != null) {
+                operation.parameters.sort(comparing(p -> p.name));
+                for (Parameter parameter : operation.parameters) {
+                    makeComparable(parameter);
+                }
+            }
+        }
+    }
+
+    private void makeComparable(Attribute attribute) {
+        if (attribute != null) {
+            stripId(attribute);
+            stripDeprecation(attribute.deprecation);
+            if (attribute.attributes != null) {
+                attribute.attributes.sort(comparing(a -> a.name));
+                for (Attribute nestedAttribute : attribute.attributes) {
+                    makeComparable(nestedAttribute);
+                }
+            }
+        }
+    }
+
+    private void makeComparable(Parameter parameter) {
+        if (parameter != null) {
+            stripId(parameter);
+            stripDeprecation(parameter.deprecation);
+            if (parameter.parameters != null) {
+                parameter.parameters.sort(comparing(p -> p.name));
+                for (Parameter nestedParameter : parameter.parameters) {
+                    makeComparable(nestedParameter);
+                }
+            }
+        }
+    }
+
+    private void stripDeprecation(Deprecation deprecation) {
+        if (deprecation != null) {
+            stripId(deprecation.since);
+        }
+    }
+
+    private void stripId(Model model) {
+        if (model != null) {
+            model.id = null;
+        }
     }
 }

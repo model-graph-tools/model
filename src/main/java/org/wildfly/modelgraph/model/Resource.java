@@ -5,6 +5,7 @@ import org.neo4j.driver.types.Node;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 
@@ -53,5 +54,18 @@ public class Resource extends NamedModel {
 
     public Resource() {
         // Required by JSON-B
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Resource resource = (Resource) o;
+        return address.equals(resource.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address);
     }
 }

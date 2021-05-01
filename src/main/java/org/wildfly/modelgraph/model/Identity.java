@@ -2,6 +2,8 @@ package org.wildfly.modelgraph.model;
 
 import org.neo4j.driver.types.Node;
 
+import java.util.Objects;
+
 import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 
 public class Identity extends Model {
@@ -25,6 +27,19 @@ public class Identity extends Model {
 
     public Identity() {
         // Required by JSON-B
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Identity identity = (Identity) o;
+        return identifier.equals(identity.identifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier);
     }
 
     @Override
