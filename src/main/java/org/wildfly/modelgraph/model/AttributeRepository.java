@@ -34,7 +34,7 @@ class AttributeRepository {
     /**
      * Returns flat attributes (w/o relations to other attributes) which match the given name (case-insensitive).
      */
-    Multi<Attribute> attributes(String name, boolean anemic) {
+    Multi<Attribute> attributes(String name) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -42,9 +42,9 @@ class AttributeRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Attribute attribute = Attribute.from(record.get("a").asNode(), anemic);
+                                Attribute attribute = Attribute.from(record.get("a").asNode());
                                 attribute.definedIn = record.get("r").asNode().get(ADDRESS).asString();
-                                attribute.deprecation = mapDeprecation(record, anemic);
+                                attribute.deprecation = mapDeprecation(record);
                                 return attribute;
                             });
                 }))
@@ -56,7 +56,7 @@ class AttributeRepository {
     /**
      * Returns deprecated attributes (w/o relations to other attributes).
      */
-    Multi<Attribute> deprecated(Version version, boolean anemic) {
+    Multi<Attribute> deprecated(Version version) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
@@ -64,9 +64,9 @@ class AttributeRepository {
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
                             .map(record -> {
-                                Attribute attribute = Attribute.from(record.get("a").asNode(), anemic);
+                                Attribute attribute = Attribute.from(record.get("a").asNode());
                                 attribute.definedIn = record.get("r").asNode().get(ADDRESS).asString();
-                                attribute.deprecation = mapDeprecation(record, anemic);
+                                attribute.deprecation = mapDeprecation(record);
                                 return attribute;
                             });
                 }))

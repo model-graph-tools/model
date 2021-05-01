@@ -19,6 +19,6 @@ public class CapabilityResource {
     @GET
     @Path("/query")
     public Multi<Capability> query(@QueryParam("name") String name) {
-        return repository.capabilities(name, false);
+        return repository.capabilities(name);
     }
 }

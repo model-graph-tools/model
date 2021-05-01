@@ -7,11 +7,9 @@ import java.util.Set;
 
 public class Capability extends NamedModel {
 
-    public static Capability from(Node node, boolean anemic) {
+    public static Capability from(Node node) {
         Capability capability = new Capability();
-        if (!anemic) {
-            mapId(node, capability);
-        }
+        mapId(node, capability);
         mapName(node, capability);
 
         return capability;

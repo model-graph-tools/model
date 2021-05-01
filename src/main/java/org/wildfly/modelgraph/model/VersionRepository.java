@@ -22,14 +22,14 @@ class VersionRepository {
     /**
      * Returns versions.
      */
-    Multi<Version> versions(boolean anemic) {
+    Multi<Version> versions() {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
                     Query query = new Query(VERSIONS);
                     RxResult result = tx.run(query);
                     return Multi.createFrom().publisher(result.records())
-                            .map(record -> Version.from(record.get("v").asNode(), anemic));
+                            .map(record -> Version.from(record.get("v").asNode()));
                 }))
                 .withFinalizer(session -> {
                     return Uni.createFrom().publisher(session.close());

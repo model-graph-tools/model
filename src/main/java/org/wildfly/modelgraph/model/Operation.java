@@ -10,11 +10,9 @@ import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 @SuppressWarnings("WeakerAccess")
 public class Operation extends NamedModel {
 
-    public static Operation from(Node node, boolean anemic) {
+    public static Operation from(Node node) {
         Operation operation = new Operation();
-        if (!anemic) {
-            mapId(node, operation);
-        }
+        mapId(node, operation);
         mapName(node, operation);
 
         operation.global = node.get(GLOBAL).isNull() ? null : node.get(GLOBAL).asBoolean();

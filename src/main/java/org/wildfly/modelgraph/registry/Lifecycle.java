@@ -54,7 +54,7 @@ public class Lifecycle {
 
     private void register() {
         log.debug("register()");
-        identityRepository.identity(false).subscribe().with(identity -> {
+        identityRepository.identity().subscribe().with(identity -> {
             log.debugf("Got %s from identity repository", identity);
             Registration registration = new Registration(identity, modelServiceUri, neo4jBrowserUri, neo4jBoltUri);
             log.debugf("Register %s", registration);
@@ -75,7 +75,7 @@ public class Lifecycle {
     private void unregister() {
         log.debug("unregister()");
         try {
-            Identity identity = identityRepository.identity(false)
+            Identity identity = identityRepository.identity()
                     .onFailure().invoke(e -> log.errorf(
                             "Unable to unregister: Cannot read identity: %s", e.getMessage()))
                     .await().atMost(Duration.ofSeconds(2));

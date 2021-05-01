@@ -24,11 +24,9 @@ public class Version extends Model {
         return version;
     }
 
-    public static Version from(Node node, boolean anemic) {
+    public static Version from(Node node) {
         Version version = new Version();
-        if (!anemic) {
-            mapId(node, version);
-        }
+        mapId(node, version);
 
         version.major = node.get(MAJOR).asInt(0);
         version.minor = node.get(MINOR).asInt(0);

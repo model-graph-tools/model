@@ -17,6 +17,6 @@ public class VersionResource {
 
     @GET
     public Multi<Version> versions() {
-        return repository.versions(false);
+        return repository.versions();
     }
 }

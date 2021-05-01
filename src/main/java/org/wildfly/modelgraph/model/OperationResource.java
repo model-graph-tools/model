@@ -15,12 +15,12 @@ public class OperationResource {
     @GET
     @Path("/query")
     public Multi<Operation> query(@QueryParam("name") String name) {
-        return repository.operations(name, false);
+        return repository.operations(name);
     }
 
     @GET
     @Path("/deprecated")
     public Multi<Operation> deprecated(@QueryParam("since") @DefaultValue("") String since) {
-        return repository.deprecated(Version.from(since), false);
+        return repository.deprecated(Version.from(since));
     }
 }

@@ -27,28 +27,28 @@ public class ManagementModelResource {
     public Uni<Models> query(@QueryParam("name") String name) {
         return Uni.createFrom().item(new Models())
                 .onItem()
-                .transformToUni(models -> resourceRepository.resources(name, false).collect().asList()
+                .transformToUni(models -> resourceRepository.resources(name).collect().asList()
                         .onItem()
                         .transformToUni(resources -> {
                             models.resources = resources;
                             return Uni.createFrom().item(models);
                         }))
                 .onItem()
-                .transformToUni(models -> operationRepository.operations(name, false).collect().asList()
+                .transformToUni(models -> operationRepository.operations(name).collect().asList()
                         .onItem()
                         .transformToUni(operations -> {
                             models.operations = operations;
                             return Uni.createFrom().item(models);
                         }))
                 .onItem()
-                .transformToUni(models -> capabilityRepository.capabilities(name, false).collect().asList()
+                .transformToUni(models -> capabilityRepository.capabilities(name).collect().asList()
                         .onItem()
                         .transformToUni(capabilities -> {
                             models.capabilities = capabilities;
                             return Uni.createFrom().item(models);
                         }))
                 .onItem()
-                .transformToUni(models -> attributeRepository.attributes(name, false).collect().asList()
+                .transformToUni(models -> attributeRepository.attributes(name).collect().asList()
                         .onItem()
                         .transformToUni(attributes -> {
                             models.attributes = attributes;
@@ -62,21 +62,21 @@ public class ManagementModelResource {
         Version version = Version.from(since);
         return Uni.createFrom().item(new Models())
                 .onItem()
-                .transformToUni(models -> resourceRepository.deprecated(version, false).collect().asList()
+                .transformToUni(models -> resourceRepository.deprecated(version).collect().asList()
                         .onItem()
                         .transformToUni(resources -> {
                             models.resources = resources;
                             return Uni.createFrom().item(models);
                         }))
                 .onItem()
-                .transformToUni(models -> operationRepository.deprecated(version, false).collect().asList()
+                .transformToUni(models -> operationRepository.deprecated(version).collect().asList()
                         .onItem()
                         .transformToUni(operations -> {
                             models.operations = operations;
                             return Uni.createFrom().item(models);
                         }))
                 .onItem()
-                .transformToUni(models -> attributeRepository.deprecated(version, false).collect().asList()
+                .transformToUni(models -> attributeRepository.deprecated(version).collect().asList()
                         .onItem()
                         .transformToUni(attributes -> {
                             models.attributes = attributes;

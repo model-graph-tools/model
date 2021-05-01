@@ -48,12 +48,12 @@ class OperationRepository {
     /**
      * Returns flat operations (w/o parameters) which match the given name (case-insensitive).
      */
-    Multi<Operation> operations(String name, boolean anemic) {
+    Multi<Operation> operations(String name) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
                     Query query = new Query(OPERATIONS, parameters("regex", regex(name)));
-                    return operationRecords(tx.run(query), anemic);
+                    return operationRecords(tx.run(query));
                 }))
                 .withFinalizer(session -> {
                     return Uni.createFrom().publisher(session.close());
@@ -63,23 +63,23 @@ class OperationRepository {
     /**
      * Returns deprecated operations (w/o parameters).
      */
-    Multi<Operation> deprecated(Version version, boolean anemic) {
+    Multi<Operation> deprecated(Version version) {
         return Multi.createFrom().resource(
                 driver::rxSession,
                 session -> session.readTransaction(tx -> {
                     Query query = new Query(DEPRECATED, parameters("ordinal", version.ordinal));
-                    return operationRecords(tx.run(query), anemic);
+                    return operationRecords(tx.run(query));
                 }))
                 .withFinalizer(session -> {
                     return Uni.createFrom().publisher(session.close());
                 });
     }
 
-    private Publisher<Operation> operationRecords(RxResult result, boolean anemic) {
+    private Publisher<Operation> operationRecords(RxResult result) {
         return Multi.createFrom().publisher(result.records())
                 .map(record -> {
-                    Operation operation = Operation.from(record.get("o").asNode(), anemic);
-                    operation.deprecation = mapDeprecation(record, anemic);
+                    Operation operation = Operation.from(record.get("o").asNode());
+                    operation.deprecation = mapDeprecation(record);
                     if (!record.get("address").isNull()) {
                         operation.providedBy = record.get("address").asString();
                     }
@@ -88,7 +88,7 @@ class OperationRepository {
                     if (v != null) {
                         Node parameterNode = v.asNode();
                         if (parameterNode.hasLabel("Parameter")) {
-                            p = Parameter.from(v.asNode(), anemic);
+                            p = Parameter.from(v.asNode());
                         }
                     }
                     return new OperationAndParameter(operation, p);

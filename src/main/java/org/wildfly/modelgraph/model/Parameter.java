@@ -9,11 +9,9 @@ import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 
 public class Parameter extends NamedModel {
 
-    public static Parameter from(Node node, boolean anemic) {
+    public static Parameter from(Node node) {
         Parameter parameter = new Parameter();
-        if (!anemic) {
-            mapId(node, parameter);
-        }
+        mapId(node, parameter);
         mapName(node, parameter);
         mapParameter(node, parameter);
 

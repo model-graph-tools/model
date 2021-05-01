@@ -6,11 +6,9 @@ import static org.wildfly.modelgraph.model.ModelDescriptionConstants.*;
 
 public class Identity extends Model {
 
-    public static Identity from(Node node, boolean anemic) {
+    public static Identity from(Node node) {
         Identity identity = new Identity();
-        if (!anemic) {
-            mapId(node, identity);
-        }
+        mapId(node, identity);
 
         identity.identifier = node.get(IDENTIFIER).asString(null);
         identity.productName = node.get(PRODUCT_NAME).asString(null);

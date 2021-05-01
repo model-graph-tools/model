@@ -16,13 +16,13 @@ public class AttributeResource {
     @GET
     @Path("/query")
     public Multi<Attribute> query(@QueryParam("name") String name) {
-        return repository.attributes(name, false);
+        return repository.attributes(name);
     }
 
 
     @GET
     @Path("/deprecated")
     public Multi<Attribute> deprecated(@QueryParam("since") @DefaultValue("") String since) {
-        return repository.deprecated(Version.from(since), false);
+        return repository.deprecated(Version.from(since));
     }
 }
