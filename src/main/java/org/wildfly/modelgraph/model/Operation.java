@@ -46,7 +46,7 @@ public class Operation extends NamedModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Operation operation = (Operation) o;
-        return name.equals(operation.name) && providedBy.equals(operation.providedBy);
+        return name.equals(operation.name) && Objects.equals(providedBy, operation.providedBy);
     }
 
     @Override
