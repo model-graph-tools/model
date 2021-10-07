@@ -56,12 +56,12 @@
 
     <properties>
         <!-- dependencies -->
-        <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
+        <quarkus.platform.version>2.3.0.Final</quarkus.platform.version>
 
         <!-- plugins -->
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <enforcer-plugin.version>3.0.0-M3</enforcer-plugin.version>
-        <quarkus-plugin.version>2.0.0.Final</quarkus-plugin.version>
+        <quarkus-plugin.version>2.3.0.Final</quarkus-plugin.version>
         <surefire-plugin.version>2.22.1</surefire-plugin.version>
 
         <!-- settings -->
