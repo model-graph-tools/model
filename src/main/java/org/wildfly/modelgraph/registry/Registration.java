@@ -1,7 +1,9 @@
 package org.wildfly.modelgraph.registry;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.wildfly.modelgraph.model.Identity;
 
+@RegisterForReflection
 public class Registration {
 
     public String identifier;

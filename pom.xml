@@ -62,7 +62,7 @@
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <enforcer-plugin.version>3.0.0-M3</enforcer-plugin.version>
         <quarkus-plugin.version>2.3.0.Final</quarkus-plugin.version>
-        <surefire-plugin.version>2.22.1</surefire-plugin.version>
+        <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 
         <!-- settings -->
         <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -70,8 +70,8 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
+        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     </properties>
 
     <dependencyManagement>
@@ -87,14 +87,13 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- CDI -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-neo4j</artifactId>
-        </dependency>
+
+        <!-- REST -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive</artifactId>
@@ -103,10 +102,24 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
         </dependency>
+
+        <!-- REST Client -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-reactive</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
         </dependency>
+
+        <!-- Neo4J -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-neo4j</artifactId>
+        </dependency>
+
+        <!-- Misc -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-scheduler</artifactId>
@@ -115,6 +128,8 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health</artifactId>
         </dependency>
+
+        <!-- Test -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
